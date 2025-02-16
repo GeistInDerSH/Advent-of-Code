@@ -41,9 +41,9 @@ class Day14(
             target.amount
         }
 
-    private fun Map<String, Reaction>.expand() = this.expand(1L)
+    private fun Map<String, Reaction>.getOreAmount() = this.getOreAmount(1L)
 
-    private fun Map<String, Reaction>.expand(fuelAmount: Long): Long {
+    private fun Map<String, Reaction>.getOreAmount(fuelAmount: Long): Long {
         val queue = ArrayDeque<OreCost>().apply { add(OreCost("FUEL", fuelAmount)) }
         val inventory = mutableMapOf<String, Long>()
         var oreRequired = 0L
@@ -77,7 +77,7 @@ class Day14(
         var upper = 100_000_000L
         while (upper - lower > 1) {
             val currentFuel = (upper + lower) / 2
-            val cost = this.expand(currentFuel)
+            val cost = this.getOreAmount(currentFuel)
             if (cost < target) {
                 lower = currentFuel
             } else {
@@ -87,7 +87,7 @@ class Day14(
         return lower
     }
 
-    override fun part1() = ingredientsMap.expand()
+    override fun part1() = ingredientsMap.getOreAmount()
 
     override fun part2() = ingredientsMap.getMaxFuel()
 }
