@@ -9,7 +9,7 @@ import kotlin.math.ceil
 class Day14(
     dataFile: DataFile,
 ) : AoC<Long, Long> {
-    private val data: Map<String, Reaction> =
+    private val ingredientsMap: Map<String, Reaction> =
         fileToStream(2019, 14, dataFile)
             .map { line ->
                 val (count, key) = line.substringAfter("=> ").split(" ")
@@ -27,10 +27,6 @@ class Day14(
         val input: List<OreCost>,
     )
 
-    init {
-        data.forEach(::println)
-    }
-
     private fun MutableMap<String, Long>.leftovers(target: OreCost): Long =
         if (target.name in this) {
             val amount = this[target.name]!!
@@ -45,8 +41,10 @@ class Day14(
             target.amount
         }
 
-    private fun Map<String, Reaction>.expand(): Long {
-        val queue = ArrayDeque<OreCost>().apply { add(OreCost("FUEL", 1)) }
+    private fun Map<String, Reaction>.expand() = this.expand(1L)
+
+    private fun Map<String, Reaction>.expand(fuelAmount: Long): Long {
+        val queue = ArrayDeque<OreCost>().apply { add(OreCost("FUEL", fuelAmount)) }
         val inventory = mutableMapOf<String, Long>()
         var oreRequired = 0L
         while (queue.isNotEmpty()) {
@@ -61,7 +59,7 @@ class Day14(
             val mul = ceil(required.toDouble() / reactions.produces.amount.toDouble()).toLong()
             val result = (reactions.produces.amount * mul) - required
             if (result > 0) {
-                inventory.putIfAbsent(head.name, 0)
+                inventory.putIfAbsent(head.name, 0L)
                 inventory[head.name] = inventory[head.name]!! + result
             }
 
@@ -73,9 +71,25 @@ class Day14(
         return oreRequired
     }
 
-    override fun part1() = data.expand()
+    private fun Map<String, Reaction>.getMaxFuel(): Long {
+        val target = 1_000_000_000_000L
+        var lower = 100000L
+        var upper = 100_000_000L
+        while (upper - lower > 1) {
+            val currentFuel = (upper + lower) / 2
+            val cost = this.expand(currentFuel)
+            if (cost < target) {
+                lower = currentFuel
+            } else {
+                upper = currentFuel
+            }
+        }
+        return lower
+    }
 
-    override fun part2() = 0L
+    override fun part1() = ingredientsMap.expand()
+
+    override fun part2() = ingredientsMap.getMaxFuel()
 }
 
 fun day14() {
